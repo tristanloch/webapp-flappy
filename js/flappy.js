@@ -76,6 +76,9 @@ game.physics.arcade.overlap(
 		  pipes,
 		  gameOver);
 }
+if(player.body.y < 0 || player.body.y > 400){
+    gameOver();
+}
 
 function gameOver(){
     location.reload();
