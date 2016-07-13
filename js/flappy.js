@@ -17,6 +17,7 @@ var image;
 var score = 0;
 var player;
 var labelScore;
+var pipes = [];
 /*
  * Loads all resources for the game and gives them names.
  */
@@ -34,39 +35,62 @@ function clickHandler(event) {
 
 
 /*
- * Initialises the game. This function is only called once.
+  Initialises the game. This function is only called once.
  */
 function create() {game.input.onDown.add(clickHandler);
+
+   game.physics.startSystem(Phaser.Physics.ARCADE);
     // set the background colour of the scene
     game.stage.setBackgroundColor("#7DE4A9");
     game.add.text(70,0,"Hope you have fun playing my game",{font:"30px Arial", fill: "#3D8B8C"});
-
-    image = game.add.sprite(10,270, "playerImg");
     player = game.add.sprite(100, 200, "playerImg");
-    game.input.keyboard.addKey(Phaser.Keyboard.RIGHT)
+
+    game.physics.arcade.enable(player);
+
+    player.body.gravity.y = 300;
+    game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
+    .onDown.add(playerJump);
+    /*game.input.keyboard.addKey(Phaser.Keyboard.RIGHT)
     .onDown.add(moveRight);
     game.input.keyboard.addKey(Phaser.Keyboard.LEFT)
     .onDown.add(moveLeft);
     game.input.keyboard.addKey(Phaser.Keyboard.UP)
     .onDown.add(moveUp);
     game.input.keyboard.addKey(Phaser.Keyboard.DOWN)
-    .onDown.add(moveDown);
-    generatePipe();
-
+    .onDown.add(moveDown);*/
+    var pipeInterval = 1.75 * Phaser.Timer.SECOND;
+game.time.events.loop(
+    pipeInterval,
+    generatePipe
+);
+    labelScore = game.add.text(20, 20, "0");
+    labelScore.setText(score.toString());
 }
 
 /*
  * This function updates the scene. It is called for every new frame.
  */
 function update() {
+game.physics.arcade.overlap(
+        player,
+		  pipes,
+		  gameOver);
+}
 
+function gameOver(){
+    location.reload();
 }
 
 
-function changeScore() { var score = 0;  score = score +1; labelScore.setText(score.toString());
+
+
+function changeScore() { score = score +1; labelScore.setText(score.toString());
 
 }
 
+function playerJump() {
+    player.body.velocity.y = -200;
+}
 
 function moveRight() {
   player.x = player.x + 10;
@@ -86,10 +110,18 @@ function moveDown() {
 
 function generatePipe() {
 
-  for(var count=0; count<8; count+=1){
-    if(count != 4){
-      game.add.sprite(20, 50*count, "pipeBlock");
+  var gap = game.rnd.integerInRange(1 ,5);
+    for (var count=0; count<8; count++) {
+        if(count != gap && count != gap+1) {
+            addPipeBlock(750, count * 50);
+        }
     }
-  }
+    changeScore();
+}
 
+function addPipeBlock(x, y) {
+  var pipeBlock = game.add.sprite(x,y,"pipeBlock");
+  pipes.push(pipeBlock);
+  game.physics.arcade.enable(pipeBlock);
+  pipeBlock.body.velocity.x = -200;
 }
